@@ -13,5 +13,7 @@ cd /home/aspandit/lab/scenic
 module load nextflow
 # singularity default on hb
 
-nextflow run main.nf --h5ad data/poscablo-raw-hvg.h5ad > nextflow.log 2>&1
+# nextflow run main.nf --h5ad data/poscablo-full-hvg.h5ad --outdir results/full-dataset
+nextflow run main.nf --h5ad data/poscablo-old-subset-hvg.h5ad --outdir results/old-subset
+nextflow run main.nf --h5ad data/poscablo-young-subset-hvg.h5ad --outdir results/young-subset
 
