@@ -1,0 +1,7 @@
+{
+    "python.venvFolders": [
+        "preprocessing",
+        "analysis"
+    ],
+    "python.defaultInterpreterPath": "${workspaceFolder}/preprocessing/.venv/bin/python3"
+}
