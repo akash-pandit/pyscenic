@@ -15,9 +15,9 @@ work
 
 # Data
 data/*
-~data/*.md
+!data/README.md
 databases/*
-~databases/download.sh
+!databases/download.sh
 
 # results
 results/*/*.h5ad
