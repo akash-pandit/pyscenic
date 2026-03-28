@@ -5,18 +5,24 @@
 # 
 # TBD: add ssh target for automatic transfer of built .sif image
 
+# color codes
+
+RED="\e[31m"
+LRED="\e[1;31m"
+BLUE="\e[34m"
+LBLUE="\e[1;34m"
+RESET="\e[0m"
+
 # utility functions
 
-log() { echo "[build.sh] LOG: $0"; }
-err() { echo "[build.sh] ERR: $0" >&2 && exit 1; }
+log() { echo -e "${BLUE}[build.sh] ${LBLUE}LOG${RESET}: $1"; }
+err() { echo -e "${RED}[build.sh] ${LRED}ERR${RESET}: $1" >&2 && exit 1; }
 
 # check user permissions
 
 [[ $(id -u) -ne 0 ]] && err "this script must be run as root/administrator"
 
 # check software dependencies (docker/podman, singularity/apptainer)
-
-
 
 docker --version > /dev/null 2>&1; DOCKER_IS_INSTALLED=$?
 
@@ -59,5 +65,7 @@ $DOCKER_BUILDER save -o h5ad-to-loom.tar local/h5ad-to-loom
 sudo $SIF_BUILDER build h5ad-to-loom.sif docker-archive://h5ad-to-loom.tar
 [[ $? -ne 0 ]] && err "image compression process failed, exiting..."
 
+rm h5ad-to-loom.tar
+
 log "done :))"
-log "You can push the
+log "
