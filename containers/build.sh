@@ -68,4 +68,3 @@ sudo $SIF_BUILDER build h5ad-to-loom.sif docker-archive://h5ad-to-loom.tar
 rm h5ad-to-loom.tar
 
 log "done :))"
-log "
