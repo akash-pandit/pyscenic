@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
+# Builds singularity image (.sif) from Dockerfile. Requires (docker or podman) and (singularity or apptainer).
+# Requires root to execute. Builds dockerfile in script execution directory.
+# 
+# TBD: add ssh target for automatic transfer of built .sif image
+
 # utility functions
+
 log() { echo "[build.sh] LOG: $0"; }
 err() { echo "[build.sh] ERR: $0" >&2 && exit 1; }
-
-# WORK IN PROGRESS
-
-dockerfile=$1
-ssh_target=$2
 
 # check user permissions
 
@@ -15,11 +16,13 @@ ssh_target=$2
 
 # check software dependencies (docker/podman, singularity/apptainer)
 
-which docker; DOCKER_IS_INSTALLED=$?
+
+
+docker --version > /dev/null 2>&1; DOCKER_IS_INSTALLED=$?
 
 if [[ DOCKER_IS_INSTALLED -ne 0 ]]; then
     log "docker not found, checking for podman"
-    which podman; PODMAN_IS_INSTALLED=$?
+    podman --version > /dev/null 2>&1; PODMAN_IS_INSTALLED=$?
 
     [[ PODMAN_IS_INSTALLED -ne 0 ]] && err "podman not found, cannot build/export dockerfile, exiting..."
 
@@ -28,11 +31,11 @@ else
     DOCKER_BUILDER="docker"
 fi
 
-which singularity; SINGULARITY_IS_INSTALLED=$?
+which singularity > /dev/null 2>&1; SINGULARITY_IS_INSTALLED=$?
 
 if [[ SINGULARITY_IS_INSTALLED -ne 0 ]]; then
     log "singularity not found, checking for apptainer"
-    which apptainer; APPTAINER_IS_INSTALLED=$?
+    which apptainer > /dev/null 2>&1; APPTAINER_IS_INSTALLED=$?
 
     [[ APPTAINER_IS_INSTALLED -ne 0 ]] && err "apptainer not found, cannot convert image to singularity image file format, exiting..."
 
