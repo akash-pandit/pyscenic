@@ -6,4 +6,3 @@ ENV UV_SYSTEM_PYTHON=1 \
     UV_COMPILE_BYTECODE=1
 
 RUN uv pip install anndata loompy
-
