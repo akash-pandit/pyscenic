@@ -38,14 +38,15 @@ process h5ad_to_loom {
 process infer_grn {
     container 'aertslab/pyscenic:0.12.1'
 
-    publishDir "${params.outdir}/grn", mode: 'copy'
+    // publishDir "${params.outdir}/grn", mode: 'copy'
+
+    array 10
 
     input:
-    path loom
-    path tfs
+    tuple val(run_id), path(loom), path(tfs)
 
     output:
-    path 'adj.tsv'
+    path 'adj-*.tsv'
 
     script:
     """
@@ -53,10 +54,42 @@ process infer_grn {
         ${loom} \\
         ${tfs} \\
         -m grnboost2 \\
-        -o adj.tsv \\
+        -o adj-${run_id}.tsv \\
         --num_workers ${task.cpus} \\
-        --seed 67
+        --seed ${run_id}
     """ 
+}
+
+process merge_adj {
+    container '/home/aspandit/lab/scenic/containers/h5ad-to-loom.sif'
+
+    publishDir "${params.outdir}/grn", mode: 'copy'
+
+    input:
+    path adj_list
+
+    output:
+    path "adj.tsv"
+
+    script:
+    """
+    #!/usr/bin/env python
+
+    import polars as pl
+    
+    query = (
+        pl.scan_csv("adj-*.tsv", separator='\t')
+        .select(['TF', 'target', 'importance'])
+        .group_by(['TF', 'target'])
+        .agg( pl.col('importance') )
+        .with_columns(
+            importance=pl.col('importance').list.mean()
+        )
+    )
+
+    avg_adj = query.collect()
+    avg_adj.write_csv('adj.tsv', separator='\t')
+    """
 }
 
 process cisTarget {
@@ -149,6 +182,7 @@ process add_auc_to_h5ad {
 workflow {
     if (!params.h5ad) error "Please provide --h5ad"
 
+    // parse input files
     h5ad_ch     = Channel.fromPath(params.h5ad).first()  // can be reused
     tfs_ch      = Channel.fromPath(params.tfs)
     rankings_ch = Channel.fromPath(params.rankings)
@@ -156,7 +190,12 @@ workflow {
     motifs_ch   = Channel.fromPath(params.motifs)
 
     loom_ch     = h5ad_to_loom(h5ad_ch).first()  // can be reused in adj/regulons
-    adj_ch      = infer_grn(loom_ch, tfs_ch)
+
+    iters_ch     = Channel.of( 1..10 )
+    adj_input_ch = iters_ch.combine(loom_ch).combine(tfs_ch)
+    adj_raw_ch   = infer_grn(adj_input_ch).collect()
+    adj_ch       = merge_adj(adj_raw_ch)
+
     regulons_ch = cisTarget(adj_ch, rankings_ch, scores_ch, motifs_ch, loom_ch)
     auc_ch      = aucell(loom_ch, regulons_ch)
     add_auc_to_h5ad(h5ad_ch, auc_ch)
