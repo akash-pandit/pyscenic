@@ -20,7 +20,8 @@ databases/*
 !databases/download.sh
 
 # results
-results/*/*.h5ad
+results/*/*
+!results/*/annotated.h5ad
 containers/*.sif
 
 # slurm
