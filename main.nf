@@ -8,7 +8,7 @@ canonical/non-canonical MkPs?
 */
 
 process h5ad_to_loom {
-    container '/home/aspandit/lab/scenic/containers/h5ad-to-loom.sif'
+    // container specified in nextflow.config (IO container)
 
     input:
     path h5ad
@@ -191,7 +191,7 @@ workflow {
 
     loom_ch     = h5ad_to_loom(h5ad_ch).first()  // can be reused in adj/regulons
 
-    iters_ch     = Channel.of( 1..10 )
+    iters_ch     = Channel.of( 1..50 )
     adj_input_ch = iters_ch.combine(loom_ch).combine(tfs_ch)
     adj_raw_ch   = infer_grn(adj_input_ch).collect()
     adj_ch       = merge_adj(adj_raw_ch)
