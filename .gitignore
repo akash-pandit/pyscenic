@@ -7,7 +7,7 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+**.venv
 
 # Nextflow
 .nextflow*
@@ -19,9 +19,12 @@ data/*
 databases/*
 !databases/download.sh
 
+# pre-post analyses
+preprocessing/*
+analysis/*
+
 # results
 results/*/*
-!results/*/annotated.h5ad
 containers/*.sif
 
 # slurm
